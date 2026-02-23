@@ -9,7 +9,8 @@ app.use(cors());
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: "*",
+        // Allow connections from the Vercel deployed app, or any origin if not set
+        origin: process.env.CLIENT_URL || "*",
         methods: ["GET", "POST"]
     }
 });

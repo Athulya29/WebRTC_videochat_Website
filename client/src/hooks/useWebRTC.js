@@ -22,8 +22,9 @@ export function useWebRTC() {
     const originalVideoTrackRef = useRef(null);
 
     useEffect(() => {
-        // Connect to signaling server
-        const newSocket = io('http://localhost:3001');
+        // Connect to signaling server: uses Vite env variable deployed on Vercel, or localhost for local dev
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+        const newSocket = io(backendUrl);
         setSocket(newSocket);
 
         return () => {
