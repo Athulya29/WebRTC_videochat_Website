@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, Mic, MicOff, VideoOff, PhoneOff, Phone, Users, Copy, Check } from 'lucide-react';
+import { Video, Mic, MicOff, VideoOff, PhoneOff, Phone, Users, Copy, Check, Send, MessageSquare, MonitorUp, MonitorOff } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useWebRTC } from './hooks/useWebRTC';
 
@@ -7,6 +7,8 @@ function App() {
   const [roomId, setRoomId] = useState('');
   const [inCall, setInCall] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [chatInput, setChatInput] = useState('');
+  const [showChat, setShowChat] = useState(false);
 
   const {
     localStream,
@@ -14,14 +16,26 @@ function App() {
     isConnected,
     micOn,
     cameraOn,
+    isScreenSharing,
+    messages,
     joinRoom,
     leaveRoom,
     toggleMic,
-    toggleCamera
+    toggleCamera,
+    sendMessage,
+    toggleScreenSharing
   } = useWebRTC();
 
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
+  const messagesEndRef = useRef(null);
+
+  // Auto scroll to bottom of chat
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, showChat]);
 
   // Bind streams to video elements
   useEffect(() => {
@@ -55,6 +69,7 @@ function App() {
     leaveRoom();
     setInCall(false);
     setRoomId('');
+    setShowChat(false);
   };
 
   const copyRoomId = () => {
@@ -63,10 +78,18 @@ function App() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleSendMessage = (e) => {
+    e.preventDefault();
+    if (chatInput.trim()) {
+      sendMessage(roomId, chatInput);
+      setChatInput('');
+    }
+  };
+
   if (inCall) {
     return (
-      <div className="app-container">
-        <div className="video-container">
+      <div className="app-container app-in-call">
+        <div className={`video-container ${showChat ? 'with-chat' : ''}`}>
           {/* Header */}
           <div className="header-room">
             <div className="brand" style={{ marginBottom: 0 }}>
@@ -98,7 +121,8 @@ function App() {
                 muted // Mute local video to prevent echo
               />
               <div className="video-label">
-                You {(!micOn || !cameraOn) && <span style={{ color: 'var(--danger)' }}>•</span>}
+                You {(!micOn || (!cameraOn && !isScreenSharing)) && <span style={{ color: 'var(--danger)' }}>•</span>}
+                {isScreenSharing && <span style={{ marginLeft: '4px', color: 'var(--primary)' }}>(Screen Sharing)</span>}
               </div>
             </div>
 
@@ -133,23 +157,82 @@ function App() {
             </button>
 
             <button
+              className={`btn-icon ${!cameraOn && !isScreenSharing ? 'off' : ''}`}
+              onClick={toggleCamera}
+              title={cameraOn ? 'Turn off camera' : 'Turn on camera'}
+              disabled={isScreenSharing}
+              style={isScreenSharing ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+            >
+              {cameraOn ? <Video size={24} /> : <VideoOff size={24} />}
+            </button>
+
+            <button
+              className={`btn-icon ${isScreenSharing ? 'active' : ''}`}
+              onClick={toggleScreenSharing}
+              title={isScreenSharing ? 'Stop sharing' : 'Share screen'}
+              style={isScreenSharing ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
+            >
+              {isScreenSharing ? <MonitorOff size={24} /> : <MonitorUp size={24} />}
+            </button>
+
+            <button
               className="btn btn-danger"
               onClick={handleLeave}
               style={{ width: 'auto', padding: '1rem 2rem', borderRadius: '40px' }}
             >
               <PhoneOff size={20} />
-              <span>Leave Call</span>
+              <span className="hide-mobile">Leave Call</span>
             </button>
 
             <button
-              className={`btn-icon ${!cameraOn ? 'off' : ''}`}
-              onClick={toggleCamera}
-              title={cameraOn ? 'Turn off camera' : 'Turn on camera'}
+              className={`btn-icon ${showChat ? 'active' : ''}`}
+              style={showChat ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
+              onClick={() => setShowChat(!showChat)}
+              title="Toggle Chat"
             >
-              {cameraOn ? <Video size={24} /> : <VideoOff size={24} />}
+              <MessageSquare size={24} />
             </button>
           </div>
         </div>
+
+        {/* Chat Sidebar */}
+        {showChat && (
+          <div className="chat-container glass-box">
+            <div className="chat-header">
+              <h3>Meeting Chat</h3>
+            </div>
+
+            <div className="chat-messages">
+              {messages.length === 0 ? (
+                <div className="empty-chat text-muted">No messages yet. Say hi!</div>
+              ) : (
+                messages.map((msg, idx) => (
+                  <div key={idx} className={`message-bubble ${msg.sender}`}>
+                    {msg.text}
+                  </div>
+                ))
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            <form className="chat-input-form" onSubmit={handleSendMessage}>
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Type a message..."
+                className="input-field chat-input"
+              />
+              <button
+                type="submit"
+                className="btn-primary send-btn"
+                disabled={!chatInput.trim()}
+              >
+                <Send size={18} />
+              </button>
+            </form>
+          </div>
+        )}
       </div>
     );
   }

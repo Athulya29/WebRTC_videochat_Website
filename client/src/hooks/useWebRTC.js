@@ -14,9 +14,12 @@ export function useWebRTC() {
     const [isConnected, setIsConnected] = useState(false);
     const [micOn, setMicOn] = useState(true);
     const [cameraOn, setCameraOn] = useState(true);
+    const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [socket, setSocket] = useState(null);
+    const [messages, setMessages] = useState([]);
 
     const peerConnectionRef = useRef(null);
+    const originalVideoTrackRef = useRef(null);
 
     useEffect(() => {
         // Connect to signaling server
@@ -32,6 +35,7 @@ export function useWebRTC() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             setLocalStream(stream);
+            originalVideoTrackRef.current = stream.getVideoTracks()[0];
             return stream;
         } catch (err) {
             console.error("Error accessing media devices.", err);
@@ -122,6 +126,10 @@ export function useWebRTC() {
             }
         });
 
+        socket.on('chat-message', (message) => {
+            setMessages(prev => [...prev, { text: message, sender: 'remote' }]);
+        });
+
         socket.on('user-disconnected', () => {
             console.log('Remote user disconnected');
             setRemoteStream(null);
@@ -129,6 +137,13 @@ export function useWebRTC() {
 
         setIsConnected(true);
     }, [socket]);
+
+    const sendMessage = (roomId, text) => {
+        if (socket && text.trim()) {
+            socket.emit('chat-message', text, roomId);
+            setMessages(prev => [...prev, { text, sender: 'local' }]);
+        }
+    };
 
     const leaveRoom = () => {
         if (peerConnectionRef.current) {
@@ -141,6 +156,8 @@ export function useWebRTC() {
         }
         setRemoteStream(null);
         setIsConnected(false);
+        setMessages([]);
+        setIsScreenSharing(false);
     };
 
     const toggleMic = () => {
@@ -154,11 +171,71 @@ export function useWebRTC() {
     };
 
     const toggleCamera = () => {
-        if (localStream) {
-            const videoTrack = localStream.getVideoTracks()[0];
+        if (localStream && !isScreenSharing) {
+            const videoTrack = originalVideoTrackRef.current;
             if (videoTrack) {
                 videoTrack.enabled = !videoTrack.enabled;
                 setCameraOn(videoTrack.enabled);
+            }
+        }
+    };
+
+    const toggleScreenSharing = async () => {
+        if (!peerConnectionRef.current) return;
+
+        if (isScreenSharing) {
+            // Stop screen sharing, swap back to camera
+            try {
+                const senders = peerConnectionRef.current.getSenders();
+                const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+
+                if (videoSender && originalVideoTrackRef.current) {
+                    // Reactivate camera if it was on
+                    originalVideoTrackRef.current.enabled = cameraOn;
+                    await videoSender.replaceTrack(originalVideoTrackRef.current);
+
+                    // Stop the screen sharing tracks locally
+                    localStream.getVideoTracks().forEach(track => {
+                        if (track !== originalVideoTrackRef.current) track.stop();
+                    });
+
+                    // Restore the stream in the local <video> element
+                    const audioTrack = localStream.getAudioTracks()[0];
+                    const newStream = new MediaStream([originalVideoTrackRef.current]);
+                    if (audioTrack) newStream.addTrack(audioTrack);
+                    setLocalStream(newStream);
+                }
+            } catch (err) {
+                console.error("Error stopping screen share:", err);
+            }
+            setIsScreenSharing(false);
+        } else {
+            // Start screen sharing, swap camera track with screen track
+            try {
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+                const screenTrack = stream.getVideoTracks()[0];
+
+                // Listen for user stopping screen share from the browser's native UI
+                screenTrack.onended = () => {
+                    toggleScreenSharing();
+                };
+
+                const senders = peerConnectionRef.current.getSenders();
+                const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+
+                if (videoSender) {
+                    await videoSender.replaceTrack(screenTrack);
+
+                    // Update local stream to show screen share to the user
+                    const audioTrack = localStream.getAudioTracks()[0];
+                    const newStream = new MediaStream([screenTrack]);
+                    if (audioTrack) newStream.addTrack(audioTrack);
+                    setLocalStream(newStream);
+
+                    setIsScreenSharing(true);
+                }
+            } catch (err) {
+                console.error("Error accessing display media.", err);
             }
         }
     };
@@ -169,9 +246,13 @@ export function useWebRTC() {
         isConnected,
         micOn,
         cameraOn,
+        isScreenSharing,
+        messages,
         joinRoom,
         leaveRoom,
         toggleMic,
-        toggleCamera
+        toggleCamera,
+        sendMessage,
+        toggleScreenSharing
     };
 }
