@@ -170,7 +170,7 @@ export function useWebRTC() {
 
         socket.on('offer', async (offer, fromId, remoteUserName) => {
             console.log('Received offer', offer, 'from user:', remoteUserName);
-            if (remoteUserName) {
+            if (remoteUserName && remoteUserName !== 'null' && remoteUserName !== 'undefined') {
                 setRemotePeerName(remoteUserName);
             }
             try {
@@ -188,7 +188,7 @@ export function useWebRTC() {
 
         socket.on('answer', async (answer, fromId, remoteUserName) => {
             console.log('Received answer', answer, 'from user:', remoteUserName);
-            if (remoteUserName) {
+            if (remoteUserName && remoteUserName !== 'null' && remoteUserName !== 'undefined') {
                 setRemotePeerName(remoteUserName);
             }
             try {
@@ -242,8 +242,24 @@ export function useWebRTC() {
             setRemoteHandRaised(isRaised);
         });
 
+        // Fetch name info when someone connects. We broadcast an explicit 'request-name' on join
+        socket.on('request-name', (requesterId) => {
+            if (userNameRef.current) {
+                socket.emit('provide-name', requesterId, userNameRef.current);
+            }
+        });
+
+        socket.on('provide-name', (name) => {
+            if (name && name !== 'null' && name !== 'undefined') {
+                setRemotePeerName(name);
+            }
+        });
+
         // Now join the room (after listeners are ready)
         socket.emit('join-room', roomId, socket.id, userNameRef.current);
+
+        // Request the name of the person already in the room
+        socket.emit('request-name', roomId);
 
         setIsConnected(true);
     }, [socket]);

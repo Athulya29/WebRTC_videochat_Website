@@ -79,6 +79,14 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('request-name', (roomId) => {
+        socket.to(roomId).emit('request-name', socket.id);
+    });
+
+    socket.on('provide-name', (targetSocketId, name) => {
+        socket.to(targetSocketId).emit('provide-name', name);
+    });
+
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
         const roomInfo = socketRooms.get(socket.id);
