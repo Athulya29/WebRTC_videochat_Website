@@ -380,22 +380,9 @@ function App() {
         <div className="home-gradient"></div>
         <div className="home-curves">
           <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
-            <path fill="rgba(30, 64, 175, 0.4)" fillOpacity="1" d="M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,170.7C672,181,768,235,864,240C960,245,1056,203,1152,192C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+            <path fill="rgba(30, 41, 59, 0.4)" fillOpacity="1" d="M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,170.7C672,181,768,235,864,240C960,245,1056,203,1152,192C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
           </svg>
         </div>
-
-        {/* Floating background elements */}
-        <div className="floating-bell">
-          <div className="bell-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
-              <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" />
-            </svg>
-          </div>
-          <div className="bell-dot"></div>
-        </div>
-        <div className="sparkle sp-1"></div>
-        <div className="sparkle sp-2"></div>
-        <div className="sparkle sp-3"></div>
       </div>
 
       <nav className="navbar">
@@ -405,12 +392,7 @@ function App() {
           </div>
           <span className="brand-text">Meetify</span>
         </div>
-        <div className="nav-links">
-          <a href="#" className="active">Home</a>
-          <a href="#">Features</a>
-          <a href="#">How It Works</a>
-          <a href="#">Contact</a>
-        </div>
+
         <button className="nav-btn" onClick={() => setShowCreateModal(true)}>Start Meeting</button>
       </nav>
 
@@ -425,17 +407,6 @@ function App() {
         </div>
 
         <div className="hero-visual">
-          {/* Floating Avatars outside laptop */}
-          <div className="floating-avatar av-left">
-            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="Avatar" />
-          </div>
-          <div className="floating-avatar av-top">
-            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="Avatar" />
-          </div>
-          <div className="floating-avatar av-right">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="Avatar" />
-          </div>
-
           {/* Laptop Mockup */}
           <div className="laptop-mockup">
             <div className="laptop-screen">

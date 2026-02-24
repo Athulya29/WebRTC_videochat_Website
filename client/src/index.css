@@ -1118,7 +1118,7 @@ body {
   color: white;
   position: relative;
   overflow: hidden;
-  background-color: #273ce6;
+  background-color: #0f172a;
 }
 
 .home-bg {
@@ -1135,7 +1135,7 @@ body {
   position: absolute;
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle at 40% 50%, #465ff5 0%, #273ce6 50%, #1522a6 100%);
+  background: radial-gradient(circle at 40% 50%, #1e293b 0%, #0f172a 50%, #020617 100%);
 }
 
 .home-curves {
