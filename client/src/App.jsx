@@ -418,13 +418,11 @@ function App() {
 
       <div className="glass-box home-card">
         <div className="home-header">
-          <h2>Premium Video Calling</h2>
-          <p className="tagline">Connect instantly with crystal clear quality.</p>
-          <div className="feature-badges">
-            <span className="badge badge-anim"><Shield size={12} /> Secure</span>
-            <span className="badge badge-anim"><Sparkles size={12} /> HD</span>
-            <span className="badge badge-anim">Free</span>
-          </div>
+          <h2>Connect instantly with Meetify.</h2>
+          <p className="tagline">Secure,fast and reliable video mettings 
+            anytime,anywhere.
+          </p>
+          
         </div>
 
         <div className="input-group anim-stagger-1">

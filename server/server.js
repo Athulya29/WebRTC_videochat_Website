@@ -21,29 +21,29 @@ const socketRooms = new Map();
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    socket.on('join-room', (roomId, userId) => {
+    socket.on('join-room', (roomId, userId, userName) => {
         // Store the room for this socket
-        socketRooms.set(socket.id, { roomId, userId });
+        socketRooms.set(socket.id, { roomId, userId, userName });
         socket.join(roomId);
-        console.log(`User ${userId} (${socket.id}) joined room ${roomId}`);
+        console.log(`User ${userName || userId} (${socket.id}) joined room ${roomId}`);
 
         // Notify others in the room that a new user connected
-        socket.to(roomId).emit('user-connected', userId);
+        socket.to(roomId).emit('user-connected', userId, userName);
     });
 
-    socket.on('offer', (offer, targetRoomId) => {
+    socket.on('offer', (offer, targetRoomId, userName) => {
         const roomInfo = socketRooms.get(socket.id);
         if (roomInfo) {
-            console.log(`Offer from ${socket.id} in room ${roomInfo.roomId}`);
-            socket.to(roomInfo.roomId).emit('offer', offer, socket.id);
+            console.log(`Offer from ${userName || socket.id} in room ${roomInfo.roomId}`);
+            socket.to(roomInfo.roomId).emit('offer', offer, socket.id, userName);
         }
     });
 
-    socket.on('answer', (answer, targetRoomId) => {
+    socket.on('answer', (answer, targetRoomId, userName) => {
         const roomInfo = socketRooms.get(socket.id);
         if (roomInfo) {
-            console.log(`Answer from ${socket.id} in room ${roomInfo.roomId}`);
-            socket.to(roomInfo.roomId).emit('answer', answer, socket.id);
+            console.log(`Answer from ${userName || socket.id} in room ${roomInfo.roomId}`);
+            socket.to(roomInfo.roomId).emit('answer', answer, socket.id, userName);
         }
     });
 

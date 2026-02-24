@@ -37,10 +37,12 @@ export function useWebRTC() {
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
+    const [remotePeerName, setRemotePeerName] = useState('');
 
     const peerConnectionRef = useRef(null);
     const originalVideoTrackRef = useRef(null);
     const iceCandidateQueueRef = useRef([]);
+    const userNameRef = useRef('');
 
     useEffect(() => {
         // Connect to signaling server: uses Vite env variable deployed on Vercel, or localhost for local dev
@@ -122,8 +124,10 @@ export function useWebRTC() {
         }
     };
 
-    const joinRoom = useCallback(async (roomId) => {
+    const joinRoom = useCallback(async (roomId, userName) => {
         if (!socket) return;
+
+        userNameRef.current = userName;
 
         // Clear any stale listeners from a previous call
         socket.off('user-connected');
@@ -135,39 +139,45 @@ export function useWebRTC() {
 
         // Reset ICE candidate queue
         iceCandidateQueueRef.current = [];
+        setRemotePeerName(''); // Reset remote peer name
 
         const stream = await initializeMedia();
         const pc = createPeerConnection(socket, stream, roomId);
 
         // Set up socket listeners BEFORE joining the room to avoid race conditions
-        socket.on('user-connected', async (userId) => {
-            console.log('User connected:', userId);
+        socket.on('user-connected', async (userId, remoteUserName) => {
+            console.log('User connected:', userId, remoteUserName);
+            if (remoteUserName) setRemotePeerName(remoteUserName);
             // Create offer
             try {
                 const offer = await pc.createOffer();
                 await pc.setLocalDescription(offer);
-                socket.emit('offer', offer, roomId);
+                // Send our name along with the offer
+                socket.emit('offer', offer, roomId, userNameRef.current);
             } catch (err) {
                 console.error('Error creating offer', err);
             }
         });
 
-        socket.on('offer', async (offer, fromId) => {
-            console.log('Received offer', offer);
+        socket.on('offer', async (offer, fromId, remoteUserName) => {
+            console.log('Received offer', offer, 'from', remoteUserName);
+            if (remoteUserName) setRemotePeerName(remoteUserName);
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(offer));
                 // Flush any ICE candidates that arrived before remote description
                 await flushIceCandidateQueue(pc);
                 const answer = await pc.createAnswer();
                 await pc.setLocalDescription(answer);
-                socket.emit('answer', answer, roomId);
+                // Send our name along with the answer
+                socket.emit('answer', answer, roomId, userNameRef.current);
             } catch (err) {
                 console.error('Error handling offer', err);
             }
         });
 
-        socket.on('answer', async (answer) => {
-            console.log('Received answer', answer);
+        socket.on('answer', async (answer, fromId, remoteUserName) => {
+            console.log('Received answer', answer, 'from', remoteUserName);
+            if (remoteUserName) setRemotePeerName(remoteUserName);
             try {
                 if (!pc.currentRemoteDescription) {
                     await pc.setRemoteDescription(new RTCSessionDescription(answer));
@@ -199,10 +209,11 @@ export function useWebRTC() {
         socket.on('user-disconnected', () => {
             console.log('Remote user disconnected');
             setRemoteStream(null);
+            setRemotePeerName('');
         });
 
         // Now join the room (after listeners are ready)
-        socket.emit('join-room', roomId, socket.id);
+        socket.emit('join-room', roomId, socket.id, userNameRef.current);
 
         setIsConnected(true);
     }, [socket]);
@@ -328,6 +339,7 @@ export function useWebRTC() {
         cameraOn,
         isScreenSharing,
         messages,
+        remotePeerName,
         joinRoom,
         leaveRoom,
         toggleMic,
