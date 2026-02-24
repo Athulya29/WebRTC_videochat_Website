@@ -38,7 +38,8 @@ function App() {
     toggleMic,
     toggleCamera,
     sendMessage,
-    toggleScreenSharing
+    toggleScreenSharing,
+    partnerName
   } = useWebRTC();
 
   const localVideoRef = useRef(null);
@@ -75,7 +76,7 @@ function App() {
     if (!roomId.trim()) return;
 
     setInCall(true);
-    await joinRoom(roomId);
+    await joinRoom(roomId, userName);
   };
 
   const handleJoinFromLink = async (e) => {
@@ -87,7 +88,7 @@ function App() {
     setNameError(false);
     setInCall(true);
     setJoinFromLink(false);
-    await joinRoom(roomId);
+    await joinRoom(roomId, userName);
   };
 
   const handleCreate = () => {
@@ -99,7 +100,7 @@ function App() {
     const newRoomId = uuidv4().slice(0, 8);
     setRoomId(newRoomId);
     setInCall(true);
-    joinRoom(newRoomId);
+    joinRoom(newRoomId, userName);
   };
 
   const handleLeave = () => {
@@ -201,7 +202,7 @@ function App() {
                 </div>
               )}
               {remoteStream && (
-                <div className="video-label">Partner</div>
+                <div className="video-label">{partnerName || 'Partner'}</div>
               )}
             </div>
           </div>
