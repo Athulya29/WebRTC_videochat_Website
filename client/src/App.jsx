@@ -12,6 +12,8 @@ function App() {
   const [showChat, setShowChat] = useState(false);
   const [nameError, setNameError] = useState(false);
   const [joinFromLink, setJoinFromLink] = useState(false);
+  const [showJoinModal, setShowJoinModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Read room ID from URL query parameter (shared link)
   useEffect(() => {
@@ -372,100 +374,141 @@ function App() {
 
   // Regular Join Screen
   return (
-    <div className="app-container">
-      {/* Animated background grid */}
-      <div className="bg-grid"></div>
-
-      {/* Aurora wave */}
-      <div className="aurora">
-        <div className="aurora-band aurora-band-1"></div>
-        <div className="aurora-band aurora-band-2"></div>
-        <div className="aurora-band aurora-band-3"></div>
-      </div>
-
-      {/* Twinkling stars */}
-      <div className="stars">
-        {[...Array(20)].map((_, i) => (
-          <div key={`star-${i}`} className="star" style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            animationDelay: `${Math.random() * 4}s`,
-            animationDuration: `${2 + Math.random() * 3}s`,
-            width: `${1 + Math.random() * 2}px`,
-            height: `${1 + Math.random() * 2}px`,
-          }}></div>
-        ))}
-      </div>
-
-      {/* Floating orbs */}
-      <div className="orb orb-1"></div>
-      <div className="orb orb-2"></div>
-      <div className="orb orb-3"></div>
-
-      {/* Animated particle dots */}
-      <div className="particles">
-        {[...Array(6)].map((_, i) => (
-          <div key={i} className={`particle particle-${i + 1}`}></div>
-        ))}
-      </div>
-
-      <div className="brand">
-        <div className="brand-icon-ring">
-          <Video className="brand-icon" size={40} />
-        </div>
-        <h1>Meetify</h1>
-      </div>
-
-      <div className="glass-box home-card">
-        <div className="home-header">
-          <h2>Connect instantly with Meetify.</h2>
-          <p className="tagline">Secure,fast and reliable video mettings 
-            anytime,anywhere.
-          </p>
-          
+    <div className="home-container">
+      {/* Background elements */}
+      <div className="home-bg">
+        <div className="home-gradient"></div>
+        <div className="home-curves">
+          <svg viewBox="0 0 1440 320" preserveAspectRatio="none">
+            <path fill="rgba(30, 64, 175, 0.4)" fillOpacity="1" d="M0,160L48,170.7C96,181,192,203,288,197.3C384,192,480,160,576,170.7C672,181,768,235,864,240C960,245,1056,203,1152,192C1248,181,1344,203,1392,213.3L1440,224L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+          </svg>
         </div>
 
-        <div className="input-group anim-stagger-1">
-          <label htmlFor="userName"><User size={14} style={{ verticalAlign: '-2px' }} /> Your Name</label>
-          <input
-            type="text"
-            id="userName"
-            className="input-field"
-            placeholder="Enter your display name"
-            value={userName}
-            onChange={(e) => { setUserName(e.target.value); if (e.target.value.trim()) setNameError(false); }}
-            required
-          />
-          {nameError && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem' }}>Please enter your name</span>}
+        {/* Floating background elements */}
+        <div className="floating-bell">
+          <div className="bell-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 22C13.1 22 14 21.1 14 20H10C10 21.1 10.9 22 12 22ZM18 16V11C18 7.93 16.37 5.36 13.5 4.68V4C13.5 3.17 12.83 2.5 12 2.5C11.17 2.5 10.5 3.17 10.5 4V4.68C7.64 5.36 6 7.92 6 11V16L4 18V19H20V18L18 16Z" />
+            </svg>
+          </div>
+          <div className="bell-dot"></div>
+        </div>
+        <div className="sparkle sp-1"></div>
+        <div className="sparkle sp-2"></div>
+        <div className="sparkle sp-3"></div>
+      </div>
+
+      <nav className="navbar">
+        <div className="nav-brand">
+          <div className="brand-icon-wrapper">
+            <div className="play-triangle"></div>
+          </div>
+          <span className="brand-text">Meetify</span>
+        </div>
+        <div className="nav-links">
+          <a href="#" className="active">Home</a>
+          <a href="#">Features</a>
+          <a href="#">How It Works</a>
+          <a href="#">Contact</a>
+        </div>
+        <button className="nav-btn" onClick={() => setShowCreateModal(true)}>Start Meeting</button>
+      </nav>
+
+      <main className="hero-section">
+        <div className="hero-content">
+          <h1 className="hero-title">Connect Instantly<br />with Meetify</h1>
+          <p className="hero-subtitle">Secure, fast, and reliable video meetings<br />anytime, anywhere.</p>
+          <div className="hero-buttons">
+            <button className="btn-start" onClick={() => setShowCreateModal(true)}>Start a Meeting</button>
+            <button className="btn-join" onClick={() => setShowJoinModal(true)}>Join with Code</button>
+          </div>
         </div>
 
-        <button className="btn btn-primary btn-glow anim-stagger-2" onClick={handleCreate}>
-          <Video size={20} />
-          New Meeting
-        </button>
+        <div className="hero-visual">
+          {/* Floating Avatars outside laptop */}
+          <div className="floating-avatar av-left">
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="Avatar" />
+          </div>
+          <div className="floating-avatar av-top">
+            <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="Avatar" />
+          </div>
+          <div className="floating-avatar av-right">
+            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?ixlib=rb-1.2.1&auto=format&fit=crop&w=150&q=80" alt="Avatar" />
+          </div>
 
-        <div className="divider anim-stagger-3">or</div>
+          {/* Laptop Mockup */}
+          <div className="laptop-mockup">
+            <div className="laptop-screen">
+              <div className="video-call-ui">
+                <div className="main-video">
+                  <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80" alt="Main Speaker" />
+                </div>
+                <div className="sidebar-videos">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="Participant" />
+                  <img src="https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?ixlib=rb-1.2.1&auto=format&fit=crop&w=200&q=80" alt="Participant" />
+                </div>
+                <div className="call-controls-mock">
+                  <div className="ctrl-icon mic"></div>
+                  <div className="ctrl-icon cam"></div>
+                  <div className="ctrl-icon end"></div>
+                </div>
+              </div>
+            </div>
+            <div className="laptop-base">
+              <div className="laptop-notch"></div>
+            </div>
+          </div>
+        </div>
+      </main>
 
-        <form className="input-group anim-stagger-4" onSubmit={handleJoin}>
-          <label htmlFor="roomId">Join using code</label>
-          <input
-            type="text"
-            id="roomId"
-            className="input-field"
-            placeholder="Enter Room Code (e.g. abc-123)"
-            value={roomId}
-            onChange={(e) => setRoomId(e.target.value)}
-          />
-          <button
-            type="submit"
-            className="btn btn-secondary"
-            disabled={!roomId.trim()}
-          >
-            <Users size={20} />
-            Join Meeting
-          </button>
-        </form>
-      </div>
+      {/* Modals for Join/Create */}
+      {(showJoinModal || showCreateModal) && (
+        <div className="modal-overlay">
+          <div className="modal-content glass-box">
+            <button className="modal-close" onClick={() => { setShowJoinModal(false); setShowCreateModal(false); setNameError(false); }}>&times;</button>
+            <div className="home-header">
+              <h2>{showCreateModal ? 'New Meeting' : 'Join Meeting'}</h2>
+              <p className="tagline">{showCreateModal ? 'Start a new secure meeting.' : 'Enter your name and room code.'}</p>
+            </div>
+
+            <form onSubmit={showCreateModal ? (e) => { e.preventDefault(); handleCreate(); } : handleJoin}>
+              <div className="input-group">
+                <label htmlFor="userName"><User size={14} style={{ verticalAlign: '-2px' }} /> Your Name</label>
+                <input
+                  type="text"
+                  id="userName"
+                  className="input-field"
+                  placeholder="Enter your display name"
+                  value={userName}
+                  onChange={(e) => { setUserName(e.target.value); if (e.target.value.trim()) setNameError(false); }}
+                  required
+                  autoFocus
+                />
+                {nameError && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem' }}>Please enter your name</span>}
+              </div>
+
+              {showJoinModal && (
+                <div className="input-group" style={{ marginTop: '1rem' }}>
+                  <label htmlFor="roomId"><Users size={14} style={{ verticalAlign: '-2px' }} /> Room Code</label>
+                  <input
+                    type="text"
+                    id="roomId"
+                    className="input-field"
+                    placeholder="Enter Room Code (e.g. abc-123)"
+                    value={roomId}
+                    onChange={(e) => setRoomId(e.target.value)}
+                    required
+                  />
+                </div>
+              )}
+
+              <button type="submit" className="btn btn-primary btn-glow" style={{ width: '100%', marginTop: '1.5rem' }}>
+                {showCreateModal ? <><Video size={20} /> Start Meeting</> : <><Users size={20} /> Join Meeting</>}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
