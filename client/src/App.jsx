@@ -78,6 +78,18 @@ function App() {
     await joinRoom(roomId);
   };
 
+  const handleJoinFromLink = async (e) => {
+    e.preventDefault();
+    if (!userName.trim()) {
+      setNameError(true);
+      return;
+    }
+    setNameError(false);
+    setInCall(true);
+    setJoinFromLink(false);
+    await joinRoom(roomId);
+  };
+
   const handleCreate = () => {
     if (!userName.trim()) {
       setNameError(true);
@@ -285,7 +297,79 @@ function App() {
     );
   }
 
-  // Join Screen
+  // Streamlined join screen when opening a shared link
+  if (joinFromLink && roomId) {
+    return (
+      <div className="app-container">
+        {/* Animated background grid */}
+        <div className="bg-grid"></div>
+
+        {/* Aurora wave */}
+        <div className="aurora">
+          <div className="aurora-band aurora-band-1"></div>
+          <div className="aurora-band aurora-band-2"></div>
+          <div className="aurora-band aurora-band-3"></div>
+        </div>
+
+        {/* Twinkling stars */}
+        <div className="stars">
+          {[...Array(20)].map((_, i) => (
+            <div key={`star-${i}`} className="star" style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 4}s`,
+              animationDuration: `${2 + Math.random() * 3}s`,
+              width: `${1 + Math.random() * 2}px`,
+              height: `${1 + Math.random() * 2}px`,
+            }}></div>
+          ))}
+        </div>
+
+        {/* Floating orbs */}
+        <div className="orb orb-1"></div>
+        <div className="orb orb-2"></div>
+        <div className="orb orb-3"></div>
+
+        <div className="brand">
+          <div className="brand-icon-ring">
+            <Video className="brand-icon" size={40} />
+          </div>
+          <h1>Meetify</h1>
+        </div>
+
+        <div className="glass-box home-card">
+          <div className="home-header">
+            <h2>You're Invited!</h2>
+            <p className="tagline">Enter your name to join the meeting</p>
+          </div>
+
+          <form onSubmit={handleJoinFromLink}>
+            <div className="input-group anim-stagger-1">
+              <label htmlFor="userName"><User size={14} style={{ verticalAlign: '-2px' }} /> Your Name</label>
+              <input
+                type="text"
+                id="userName"
+                className="input-field"
+                placeholder="Enter your display name"
+                value={userName}
+                onChange={(e) => { setUserName(e.target.value); if (e.target.value.trim()) setNameError(false); }}
+                autoFocus
+                required
+              />
+              {nameError && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem' }}>Please enter your name</span>}
+            </div>
+
+            <button type="submit" className="btn btn-primary btn-glow anim-stagger-2" style={{ width: '100%', marginTop: '1rem' }}>
+              <Phone size={20} />
+              Join Meeting
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Regular Join Screen
   return (
     <div className="app-container">
       {/* Animated background grid */}
