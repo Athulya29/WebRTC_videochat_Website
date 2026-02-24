@@ -11,6 +11,19 @@ function App() {
   const [chatInput, setChatInput] = useState('');
   const [showChat, setShowChat] = useState(false);
   const [nameError, setNameError] = useState(false);
+  const [joinFromLink, setJoinFromLink] = useState(false);
+
+  // Read room ID from URL query parameter (shared link)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const roomFromUrl = params.get('room');
+    if (roomFromUrl) {
+      setRoomId(roomFromUrl);
+      setJoinFromLink(true);
+      // Clean up the URL without reloading
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, []);
 
   const {
     localStream,
@@ -84,8 +97,13 @@ function App() {
     setShowChat(false);
   };
 
+  const getShareableLink = () => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    return `${baseUrl}?room=${roomId}`;
+  };
+
   const copyRoomId = () => {
-    navigator.clipboard.writeText(roomId);
+    navigator.clipboard.writeText(getShareableLink());
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -127,7 +145,7 @@ function App() {
                 {copied ? <Check size={16} color="var(--success)" /> : <Copy size={16} />}
               </button>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Join my Meetify video call!\nRoom ID: ${roomId}\nhttps://web-rtc-videochat-website.vercel.app/`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Join my Meetify video call!\n${getShareableLink()}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-icon btn-whatsapp"
