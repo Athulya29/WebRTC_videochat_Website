@@ -39,7 +39,7 @@ function App() {
     toggleCamera,
     sendMessage,
     toggleScreenSharing,
-    partnerName
+    remotePeerName
   } = useWebRTC();
 
   const localVideoRef = useRef(null);
@@ -202,7 +202,7 @@ function App() {
                 </div>
               )}
               {remoteStream && (
-                <div className="video-label">{partnerName || 'Partner'}</div>
+                <div className="video-label">{remotePeerName || 'Partner'}</div>
               )}
             </div>
           </div>

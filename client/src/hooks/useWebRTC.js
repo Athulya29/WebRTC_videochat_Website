@@ -37,7 +37,6 @@ export function useWebRTC() {
     const [isScreenSharing, setIsScreenSharing] = useState(false);
     const [socket, setSocket] = useState(null);
     const [messages, setMessages] = useState([]);
-    const [partnerName, setPartnerName] = useState('');
 
     const peerConnectionRef = useRef(null);
     const originalVideoTrackRef = useRef(null);
@@ -123,12 +122,11 @@ export function useWebRTC() {
         }
     };
 
-    const joinRoom = useCallback(async (roomId, userName) => {
+    const joinRoom = useCallback(async (roomId) => {
         if (!socket) return;
 
         // Clear any stale listeners from a previous call
         socket.off('user-connected');
-        socket.off('room-users');
         socket.off('offer');
         socket.off('answer');
         socket.off('ice-candidate');
@@ -142,9 +140,8 @@ export function useWebRTC() {
         const pc = createPeerConnection(socket, stream, roomId);
 
         // Set up socket listeners BEFORE joining the room to avoid race conditions
-        socket.on('user-connected', async (userId, remoteUserName) => {
-            console.log('User connected:', userId, remoteUserName);
-            setPartnerName(remoteUserName || 'Partner');
+        socket.on('user-connected', async (userId) => {
+            console.log('User connected:', userId);
             // Create offer
             try {
                 const offer = await pc.createOffer();
@@ -152,13 +149,6 @@ export function useWebRTC() {
                 socket.emit('offer', offer, roomId);
             } catch (err) {
                 console.error('Error creating offer', err);
-            }
-        });
-
-        // Receive names of users already in the room
-        socket.on('room-users', (users) => {
-            if (users.length > 0) {
-                setPartnerName(users[0].userName || 'Partner');
             }
         });
 
@@ -206,14 +196,13 @@ export function useWebRTC() {
             setMessages(prev => [...prev, { text: message, sender: 'remote' }]);
         });
 
-        socket.on('user-disconnected', (userId, remoteUserName) => {
+        socket.on('user-disconnected', () => {
             console.log('Remote user disconnected');
             setRemoteStream(null);
-            setPartnerName('');
         });
 
         // Now join the room (after listeners are ready)
-        socket.emit('join-room', roomId, socket.id, userName);
+        socket.emit('join-room', roomId, socket.id);
 
         setIsConnected(true);
     }, [socket]);
@@ -229,7 +218,6 @@ export function useWebRTC() {
         // Clean up socket listeners
         if (socket) {
             socket.off('user-connected');
-            socket.off('room-users');
             socket.off('offer');
             socket.off('answer');
             socket.off('ice-candidate');
@@ -249,7 +237,6 @@ export function useWebRTC() {
         setIsConnected(false);
         setMessages([]);
         setIsScreenSharing(false);
-        setPartnerName('');
         iceCandidateQueueRef.current = [];
     };
 
@@ -346,7 +333,6 @@ export function useWebRTC() {
         toggleMic,
         toggleCamera,
         sendMessage,
-        toggleScreenSharing,
-        partnerName
+        toggleScreenSharing
     };
 }

@@ -21,25 +21,14 @@ const socketRooms = new Map();
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
-    socket.on('join-room', (roomId, userId, userName) => {
-        // Store the room and name for this socket
-        socketRooms.set(socket.id, { roomId, userId, userName: userName || 'Guest' });
+    socket.on('join-room', (roomId, userId) => {
+        // Store the room for this socket
+        socketRooms.set(socket.id, { roomId, userId });
         socket.join(roomId);
-        console.log(`User ${userName || userId} (${socket.id}) joined room ${roomId}`);
+        console.log(`User ${userId} (${socket.id}) joined room ${roomId}`);
 
-        // Send existing users' names to the newly joined user
-        const existingUsers = [];
-        for (const [sid, info] of socketRooms.entries()) {
-            if (info.roomId === roomId && sid !== socket.id) {
-                existingUsers.push({ userId: info.userId, userName: info.userName });
-            }
-        }
-        if (existingUsers.length > 0) {
-            socket.emit('room-users', existingUsers);
-        }
-
-        // Notify others in the room that a new user connected (with their name)
-        socket.to(roomId).emit('user-connected', userId, userName || 'Guest');
+        // Notify others in the room that a new user connected
+        socket.to(roomId).emit('user-connected', userId);
     });
 
     socket.on('offer', (offer, targetRoomId) => {
