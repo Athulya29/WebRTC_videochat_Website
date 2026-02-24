@@ -39,6 +39,11 @@ export function useWebRTC() {
     const [messages, setMessages] = useState([]);
     const [remotePeerName, setRemotePeerName] = useState('');
 
+    // New Features: Reactions & Raise Hand
+    const [reactions, setReactions] = useState([]); // Array of { id, emoji, sender: 'local' | 'remote' }
+    const [localHandRaised, setLocalHandRaised] = useState(false);
+    const [remoteHandRaised, setRemoteHandRaised] = useState(false);
+
     const peerConnectionRef = useRef(null);
     const originalVideoTrackRef = useRef(null);
     const iceCandidateQueueRef = useRef([]);
@@ -136,10 +141,13 @@ export function useWebRTC() {
         socket.off('ice-candidate');
         socket.off('chat-message');
         socket.off('user-disconnected');
+        socket.off('reaction');
+        socket.off('toggle-hand');
 
         // Reset ICE candidate queue
         iceCandidateQueueRef.current = [];
         setRemotePeerName(''); // Reset remote peer name
+        setRemoteHandRaised(false); // Reset remote hand raised state
 
         const stream = await initializeMedia();
         const pc = createPeerConnection(socket, stream, roomId);
@@ -210,6 +218,23 @@ export function useWebRTC() {
             console.log('Remote user disconnected');
             setRemoteStream(null);
             setRemotePeerName('');
+            setRemoteHandRaised(false);
+        });
+
+        // Reaction handler
+        socket.on('reaction', (emoji) => {
+            const reactionId = Date.now() + Math.random();
+            setReactions(prev => [...prev, { id: reactionId, emoji, sender: 'remote' }]);
+
+            // Auto-remove reaction after animation completes (3s)
+            setTimeout(() => {
+                setReactions(prev => prev.filter(r => r.id !== reactionId));
+            }, 3000);
+        });
+
+        // Raise hand handler
+        socket.on('toggle-hand', (isRaised) => {
+            setRemoteHandRaised(isRaised);
         });
 
         // Now join the room (after listeners are ready)
@@ -225,6 +250,27 @@ export function useWebRTC() {
         }
     };
 
+    const sendReaction = (roomId, emoji) => {
+        if (socket) {
+            socket.emit('reaction', emoji);
+            const reactionId = Date.now() + Math.random();
+            setReactions(prev => [...prev, { id: reactionId, emoji, sender: 'local' }]);
+
+            // Auto-remove reaction after animation completes (3s)
+            setTimeout(() => {
+                setReactions(prev => prev.filter(r => r.id !== reactionId));
+            }, 3000);
+        }
+    };
+
+    const toggleHand = (roomId) => {
+        if (socket) {
+            const newRaisedStatus = !localHandRaised;
+            setLocalHandRaised(newRaisedStatus);
+            socket.emit('toggle-hand', newRaisedStatus);
+        }
+    };
+
     const leaveRoom = () => {
         // Clean up socket listeners
         if (socket) {
@@ -234,6 +280,8 @@ export function useWebRTC() {
             socket.off('ice-candidate');
             socket.off('chat-message');
             socket.off('user-disconnected');
+            socket.off('reaction');
+            socket.off('toggle-hand');
         }
 
         if (peerConnectionRef.current) {
@@ -247,6 +295,9 @@ export function useWebRTC() {
         setRemoteStream(null);
         setIsConnected(false);
         setMessages([]);
+        setReactions([]);
+        setLocalHandRaised(false);
+        setRemoteHandRaised(false);
         setIsScreenSharing(false);
         iceCandidateQueueRef.current = [];
     };
@@ -340,11 +391,16 @@ export function useWebRTC() {
         isScreenSharing,
         messages,
         remotePeerName,
+        reactions,
+        localHandRaised,
+        remoteHandRaised,
         joinRoom,
         leaveRoom,
         toggleMic,
         toggleCamera,
         sendMessage,
-        toggleScreenSharing
+        toggleScreenSharing,
+        sendReaction,
+        toggleHand
     };
 }

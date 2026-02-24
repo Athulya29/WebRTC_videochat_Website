@@ -61,6 +61,20 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on('reaction', (emoji) => {
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            socket.to(roomInfo.roomId).emit('reaction', emoji, socket.id);
+        }
+    });
+
+    socket.on('toggle-hand', (isRaised) => {
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            socket.to(roomInfo.roomId).emit('toggle-hand', isRaised, socket.id);
+        }
+    });
+
     socket.on('disconnect', () => {
         console.log(`User disconnected: ${socket.id}`);
         const roomInfo = socketRooms.get(socket.id);

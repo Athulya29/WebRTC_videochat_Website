@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Video, Mic, MicOff, VideoOff, PhoneOff, Phone, Users, Copy, Check, Send, MessageSquare, MonitorUp, MonitorOff, User, Shield, Sparkles } from 'lucide-react';
+import { Video, Mic, MicOff, VideoOff, PhoneOff, Phone, Users, Copy, Check, Send, MessageSquare, MonitorUp, MonitorOff, User, Shield, Sparkles, Hand, Smile } from 'lucide-react';
 import { v4 as uuidv4 } from 'uuid';
 import { useWebRTC } from './hooks/useWebRTC';
 
@@ -14,6 +14,7 @@ function App() {
   const [joinFromLink, setJoinFromLink] = useState(false);
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showReactions, setShowReactions] = useState(false);
 
   // Read room ID from URL query parameter (shared link)
   useEffect(() => {
@@ -41,7 +42,12 @@ function App() {
     toggleCamera,
     sendMessage,
     toggleScreenSharing,
-    remotePeerName
+    remotePeerName,
+    reactions,
+    localHandRaised,
+    remoteHandRaised,
+    sendReaction,
+    toggleHand
   } = useWebRTC();
 
   const localVideoRef = useRef(null);
@@ -186,6 +192,7 @@ function App() {
               <div className="video-label">
                 {userName || 'You'} {(!micOn || (!cameraOn && !isScreenSharing)) && <span style={{ color: 'var(--danger)' }}>•</span>}
                 {isScreenSharing && <span style={{ marginLeft: '4px', color: 'var(--primary)' }}>(Screen Sharing)</span>}
+                {localHandRaised && <Hand size={16} color="var(--primary)" style={{ marginLeft: '8px' }} />}
               </div>
             </div>
 
@@ -204,8 +211,23 @@ function App() {
                 </div>
               )}
               {remoteStream && (
-                <div className="video-label">{remotePeerName || 'Partner'}</div>
+                <div className="video-label">
+                  {remotePeerName || 'Partner'}
+                  {remoteHandRaised && <Hand size={16} color="var(--primary)" style={{ marginLeft: '8px' }} />}
+                </div>
               )}
+            </div>
+
+            {/* Floating Reactions overlay */}
+            <div className="reactions-overlay pointer-events-none">
+              {reactions.map((reaction) => (
+                <div
+                  key={reaction.id}
+                  className={`floating-reaction ${reaction.sender === 'local' ? 'reaction-local' : 'reaction-remote'}`}
+                >
+                  {reaction.emoji}
+                </div>
+              ))}
             </div>
           </div>
 
@@ -237,6 +259,43 @@ function App() {
             >
               {isScreenSharing ? <MonitorOff size={24} /> : <MonitorUp size={24} />}
             </button>
+
+            <button
+              className={`btn-icon ${localHandRaised ? 'active' : ''}`}
+              style={localHandRaised ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
+              onClick={() => toggleHand(roomId)}
+              title={localHandRaised ? 'Lower Hand' : 'Raise Hand'}
+            >
+              <Hand size={24} />
+            </button>
+
+            <div style={{ position: 'relative' }}>
+              <button
+                className={`btn-icon ${showReactions ? 'active' : ''}`}
+                style={showReactions ? { background: 'var(--primary)', borderColor: 'var(--primary)' } : {}}
+                onClick={() => setShowReactions(!showReactions)}
+                title="Send Reaction"
+              >
+                <Smile size={24} />
+              </button>
+
+              {showReactions && (
+                <div className="reaction-menu glass-box">
+                  {['👍', '😂', '🎉', '❤️', '😮'].map(emoji => (
+                    <button
+                      key={emoji}
+                      className="emoji-btn"
+                      onClick={() => {
+                        sendReaction(roomId, emoji);
+                        setShowReactions(false);
+                      }}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             <button
               className="btn btn-danger"
