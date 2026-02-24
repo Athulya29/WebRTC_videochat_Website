@@ -282,6 +282,23 @@ function App() {
         ))}
       </div>
 
+      {/* Aurora waves */}
+      <div className="aurora">
+        <div className="aurora-wave aurora-wave-1"></div>
+        <div className="aurora-wave aurora-wave-2"></div>
+        <div className="aurora-wave aurora-wave-3"></div>
+      </div>
+
+      {/* Shooting meteors */}
+      <div className="meteors">
+        <div className="meteor meteor-1"></div>
+        <div className="meteor meteor-2"></div>
+        <div className="meteor meteor-3"></div>
+      </div>
+
+      {/* Dot grid */}
+      <div className="dot-grid"></div>
+
       <div className="brand">
         <div className="brand-icon-ring">
           <Video className="brand-icon" size={40} />
