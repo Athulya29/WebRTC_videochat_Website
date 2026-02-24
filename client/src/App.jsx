@@ -270,6 +270,30 @@ function App() {
   // Join Screen
   return (
     <div className="app-container">
+      {/* Animated background grid */}
+      <div className="bg-grid"></div>
+
+      {/* Aurora wave */}
+      <div className="aurora">
+        <div className="aurora-band aurora-band-1"></div>
+        <div className="aurora-band aurora-band-2"></div>
+        <div className="aurora-band aurora-band-3"></div>
+      </div>
+
+      {/* Twinkling stars */}
+      <div className="stars">
+        {[...Array(20)].map((_, i) => (
+          <div key={`star-${i}`} className="star" style={{
+            left: `${Math.random() * 100}%`,
+            top: `${Math.random() * 100}%`,
+            animationDelay: `${Math.random() * 4}s`,
+            animationDuration: `${2 + Math.random() * 3}s`,
+            width: `${1 + Math.random() * 2}px`,
+            height: `${1 + Math.random() * 2}px`,
+          }}></div>
+        ))}
+      </div>
+
       {/* Floating orbs */}
       <div className="orb orb-1"></div>
       <div className="orb orb-2"></div>
@@ -281,23 +305,6 @@ function App() {
           <div key={i} className={`particle particle-${i + 1}`}></div>
         ))}
       </div>
-
-      {/* Aurora waves */}
-      <div className="aurora">
-        <div className="aurora-wave aurora-wave-1"></div>
-        <div className="aurora-wave aurora-wave-2"></div>
-        <div className="aurora-wave aurora-wave-3"></div>
-      </div>
-
-      {/* Shooting meteors */}
-      <div className="meteors">
-        <div className="meteor meteor-1"></div>
-        <div className="meteor meteor-2"></div>
-        <div className="meteor meteor-3"></div>
-      </div>
-
-      {/* Dot grid */}
-      <div className="dot-grid"></div>
 
       <div className="brand">
         <div className="brand-icon-ring">

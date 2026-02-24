@@ -46,6 +46,154 @@ body {
   padding: 2rem;
   width: 100%;
   position: relative;
+  overflow: hidden;
+}
+
+/* ─── Animated Background Grid ─── */
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(79, 70, 229, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(79, 70, 229, 0.04) 1px, transparent 1px);
+  background-size: 60px 60px;
+  pointer-events: none;
+  z-index: 0;
+  mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 50%, black 30%, transparent 70%);
+}
+
+.bg-grid::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(79, 70, 229, 0.06) 50%,
+      transparent 100%);
+  background-size: 100% 200%;
+  animation: gridScan 6s ease-in-out infinite;
+}
+
+@keyframes gridScan {
+
+  0%,
+  100% {
+    background-position: 0 -100%;
+  }
+
+  50% {
+    background-position: 0 100%;
+  }
+}
+
+/* ─── Aurora Ribbon Waves ─── */
+.aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.aurora-band {
+  position: absolute;
+  width: 150%;
+  height: 200px;
+  left: -25%;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0;
+  animation: auroraWave 8s ease-in-out infinite;
+}
+
+.aurora-band-1 {
+  top: 15%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(79, 70, 229, 0.12) 20%,
+      rgba(129, 140, 248, 0.15) 40%,
+      rgba(192, 132, 252, 0.10) 60%,
+      transparent 100%);
+  animation-delay: 0s;
+}
+
+.aurora-band-2 {
+  top: 50%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(236, 72, 153, 0.08) 30%,
+      rgba(244, 114, 182, 0.12) 50%,
+      rgba(192, 132, 252, 0.08) 70%,
+      transparent 100%);
+  animation-delay: -3s;
+  animation-duration: 10s;
+}
+
+.aurora-band-3 {
+  top: 75%;
+  background: linear-gradient(90deg,
+      transparent 0%,
+      rgba(99, 102, 241, 0.10) 25%,
+      rgba(79, 70, 229, 0.14) 50%,
+      rgba(129, 140, 248, 0.08) 75%,
+      transparent 100%);
+  animation-delay: -6s;
+  animation-duration: 12s;
+}
+
+@keyframes auroraWave {
+  0% {
+    transform: translateX(-20%) scaleY(0.8);
+    opacity: 0;
+  }
+
+  25% {
+    opacity: 0.7;
+  }
+
+  50% {
+    transform: translateX(20%) scaleY(1.2);
+    opacity: 1;
+  }
+
+  75% {
+    opacity: 0.7;
+  }
+
+  100% {
+    transform: translateX(-20%) scaleY(0.8);
+    opacity: 0;
+  }
+}
+
+/* ─── Twinkling Stars ─── */
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.7);
+  animation: twinkle ease-in-out infinite;
+}
+
+@keyframes twinkle {
+
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
 .brand {
@@ -550,141 +698,6 @@ body {
   top: 50%;
   left: 60%;
   animation-delay: -10s;
-}
-
-/* Aurora waves */
-.aurora {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.aurora-wave {
-  position: absolute;
-  width: 200%;
-  height: 200px;
-  border-radius: 50%;
-  opacity: 0.08;
-  filter: blur(60px);
-  animation: auroraFlow 8s ease-in-out infinite alternate;
-}
-
-.aurora-wave-1 {
-  background: linear-gradient(90deg, transparent, #4f46e5, #818cf8, transparent);
-  top: 10%;
-  left: -50%;
-  animation-duration: 8s;
-}
-
-.aurora-wave-2 {
-  background: linear-gradient(90deg, transparent, #ec4899, #f472b6, transparent);
-  top: 40%;
-  left: -30%;
-  animation-duration: 12s;
-  animation-delay: -3s;
-  height: 150px;
-}
-
-.aurora-wave-3 {
-  background: linear-gradient(90deg, transparent, #6366f1, #a5b4fc, transparent);
-  top: 70%;
-  left: -40%;
-  animation-duration: 10s;
-  animation-delay: -6s;
-  height: 180px;
-}
-
-@keyframes auroraFlow {
-  0% {
-    transform: translateX(-10%) rotate(-3deg);
-  }
-
-  100% {
-    transform: translateX(10%) rotate(3deg);
-  }
-}
-
-/* Shooting meteors */
-.meteors {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-}
-
-.meteor {
-  position: absolute;
-  width: 2px;
-  height: 80px;
-  background: linear-gradient(to bottom, rgba(129, 140, 248, 0.8), transparent);
-  border-radius: 999px;
-  transform: rotate(-45deg);
-  animation: meteorShoot linear infinite;
-  opacity: 0;
-}
-
-.meteor-1 {
-  top: -10%;
-  left: 15%;
-  animation-duration: 3s;
-  animation-delay: 0s;
-}
-
-.meteor-2 {
-  top: -10%;
-  left: 55%;
-  animation-duration: 4s;
-  animation-delay: -1.5s;
-  height: 60px;
-}
-
-.meteor-3 {
-  top: -10%;
-  left: 80%;
-  animation-duration: 3.5s;
-  animation-delay: -2.5s;
-  height: 100px;
-  background: linear-gradient(to bottom, rgba(244, 114, 182, 0.7), transparent);
-}
-
-@keyframes meteorShoot {
-  0% {
-    transform: rotate(-45deg) translateY(-100px);
-    opacity: 0;
-  }
-
-  5% {
-    opacity: 1;
-  }
-
-  30% {
-    opacity: 1;
-  }
-
-  60% {
-    transform: rotate(-45deg) translateY(calc(100vh + 200px));
-    opacity: 0;
-  }
-
-  100% {
-    transform: rotate(-45deg) translateY(calc(100vh + 200px));
-    opacity: 0;
-  }
-}
-
-/* Dot grid background */
-.dot-grid {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0;
-  background-image: radial-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px);
-  background-size: 32px 32px;
-  mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 70%);
-  -webkit-mask-image: radial-gradient(ellipse 60% 50% at 50% 50%, black 30%, transparent 70%);
 }
 
 /* Feature badges */
