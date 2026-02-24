@@ -10,6 +10,7 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [showChat, setShowChat] = useState(false);
+  const [nameError, setNameError] = useState(false);
 
   const {
     localStream,
@@ -53,6 +54,11 @@ function App() {
 
   const handleJoin = async (e) => {
     e.preventDefault();
+    if (!userName.trim()) {
+      setNameError(true);
+      return;
+    }
+    setNameError(false);
     if (!roomId.trim()) return;
 
     setInCall(true);
@@ -60,6 +66,11 @@ function App() {
   };
 
   const handleCreate = () => {
+    if (!userName.trim()) {
+      setNameError(true);
+      return;
+    }
+    setNameError(false);
     const newRoomId = uuidv4().slice(0, 8);
     setRoomId(newRoomId);
     setInCall(true);
@@ -288,8 +299,10 @@ function App() {
             className="input-field"
             placeholder="Enter your display name"
             value={userName}
-            onChange={(e) => setUserName(e.target.value)}
+            onChange={(e) => { setUserName(e.target.value); if (e.target.value.trim()) setNameError(false); }}
+            required
           />
+          {nameError && <span style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: '0.25rem' }}>Please enter your name</span>}
         </div>
 
         <button className="btn btn-primary btn-glow anim-stagger-2" onClick={handleCreate}>
