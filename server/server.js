@@ -15,36 +15,59 @@ const io = new Server(server, {
     }
 });
 
+// Track which room each socket is in
+const socketRooms = new Map();
+
 io.on('connection', (socket) => {
     console.log(`User connected: ${socket.id}`);
 
     socket.on('join-room', (roomId, userId) => {
+        // Store the room for this socket
+        socketRooms.set(socket.id, { roomId, userId });
         socket.join(roomId);
         console.log(`User ${userId} (${socket.id}) joined room ${roomId}`);
 
-        // Notify others in the room
+        // Notify others in the room that a new user connected
         socket.to(roomId).emit('user-connected', userId);
+    });
 
-        socket.on('offer', (offer, toUserId) => {
-            socket.to(roomId).emit('offer', offer, socket.id);
-        });
+    socket.on('offer', (offer, targetRoomId) => {
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            console.log(`Offer from ${socket.id} in room ${roomInfo.roomId}`);
+            socket.to(roomInfo.roomId).emit('offer', offer, socket.id);
+        }
+    });
 
-        socket.on('answer', (answer, toUserId) => {
-            socket.to(roomId).emit('answer', answer, socket.id);
-        });
+    socket.on('answer', (answer, targetRoomId) => {
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            console.log(`Answer from ${socket.id} in room ${roomInfo.roomId}`);
+            socket.to(roomInfo.roomId).emit('answer', answer, socket.id);
+        }
+    });
 
-        socket.on('ice-candidate', (candidate, toUserId) => {
-            socket.to(roomId).emit('ice-candidate', candidate, socket.id);
-        });
+    socket.on('ice-candidate', (candidate, targetRoomId) => {
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            socket.to(roomInfo.roomId).emit('ice-candidate', candidate, socket.id);
+        }
+    });
 
-        socket.on('chat-message', (message) => {
-            socket.to(roomId).emit('chat-message', message, socket.id);
-        });
+    socket.on('chat-message', (message) => {
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            socket.to(roomInfo.roomId).emit('chat-message', message, socket.id);
+        }
+    });
 
-        socket.on('disconnect', () => {
-            console.log(`User disconnected: ${socket.id}`);
-            socket.to(roomId).emit('user-disconnected', userId);
-        });
+    socket.on('disconnect', () => {
+        console.log(`User disconnected: ${socket.id}`);
+        const roomInfo = socketRooms.get(socket.id);
+        if (roomInfo) {
+            socket.to(roomInfo.roomId).emit('user-disconnected', roomInfo.userId);
+            socketRooms.delete(socket.id);
+        }
     });
 });
 

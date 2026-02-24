@@ -4,7 +4,27 @@ import { io } from 'socket.io-client';
 const ICE_SERVERS = {
     iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' }
+        { urls: 'stun:stun1.l.google.com:19302' },
+        {
+            urls: 'turn:staticauth.openrelay.metered.ca:80',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:staticauth.openrelay.metered.ca:80?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turn:staticauth.openrelay.metered.ca:443',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        },
+        {
+            urls: 'turns:staticauth.openrelay.metered.ca:443?transport=tcp',
+            username: 'openrelayproject',
+            credential: 'openrelayproject'
+        }
     ]
 };
 
@@ -20,6 +40,7 @@ export function useWebRTC() {
 
     const peerConnectionRef = useRef(null);
     const originalVideoTrackRef = useRef(null);
+    const iceCandidateQueueRef = useRef([]);
 
     useEffect(() => {
         // Connect to signaling server: uses Vite env variable deployed on Vercel, or localhost for local dev
@@ -69,19 +90,56 @@ export function useWebRTC() {
             }
         };
 
+        // Log connection state for debugging
+        pc.onconnectionstatechange = () => {
+            console.log('Connection state:', pc.connectionState);
+            if (pc.connectionState === 'connected') {
+                setIsConnected(true);
+            }
+        };
+
+        pc.oniceconnectionstatechange = () => {
+            console.log('ICE connection state:', pc.iceConnectionState);
+            if (pc.iceConnectionState === 'failed') {
+                console.log('ICE connection failed, attempting restart...');
+                pc.restartIce();
+            }
+        };
+
         peerConnectionRef.current = pc;
         return pc;
+    };
+
+    // Helper to flush queued ICE candidates once remote description is set
+    const flushIceCandidateQueue = async (pc) => {
+        while (iceCandidateQueueRef.current.length > 0) {
+            const candidate = iceCandidateQueueRef.current.shift();
+            try {
+                await pc.addIceCandidate(new RTCIceCandidate(candidate));
+            } catch (err) {
+                console.error('Error adding queued ICE candidate', err);
+            }
+        }
     };
 
     const joinRoom = useCallback(async (roomId) => {
         if (!socket) return;
 
+        // Clear any stale listeners from a previous call
+        socket.off('user-connected');
+        socket.off('offer');
+        socket.off('answer');
+        socket.off('ice-candidate');
+        socket.off('chat-message');
+        socket.off('user-disconnected');
+
+        // Reset ICE candidate queue
+        iceCandidateQueueRef.current = [];
+
         const stream = await initializeMedia();
         const pc = createPeerConnection(socket, stream, roomId);
 
-        // Socket Event Listeners
-        socket.emit('join-room', roomId, socket.id);
-
+        // Set up socket listeners BEFORE joining the room to avoid race conditions
         socket.on('user-connected', async (userId) => {
             console.log('User connected:', userId);
             // Create offer
@@ -98,6 +156,8 @@ export function useWebRTC() {
             console.log('Received offer', offer);
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(offer));
+                // Flush any ICE candidates that arrived before remote description
+                await flushIceCandidateQueue(pc);
                 const answer = await pc.createAnswer();
                 await pc.setLocalDescription(answer);
                 socket.emit('answer', answer, roomId);
@@ -111,6 +171,8 @@ export function useWebRTC() {
             try {
                 if (!pc.currentRemoteDescription) {
                     await pc.setRemoteDescription(new RTCSessionDescription(answer));
+                    // Flush any ICE candidates that arrived before remote description
+                    await flushIceCandidateQueue(pc);
                 }
             } catch (err) {
                 console.error('Error handling answer', err);
@@ -121,6 +183,9 @@ export function useWebRTC() {
             try {
                 if (pc.remoteDescription) {
                     await pc.addIceCandidate(new RTCIceCandidate(candidate));
+                } else {
+                    // Queue ICE candidates until remote description is set
+                    iceCandidateQueueRef.current.push(candidate);
                 }
             } catch (err) {
                 console.error('Error adding ICE candidate', err);
@@ -136,6 +201,9 @@ export function useWebRTC() {
             setRemoteStream(null);
         });
 
+        // Now join the room (after listeners are ready)
+        socket.emit('join-room', roomId, socket.id);
+
         setIsConnected(true);
     }, [socket]);
 
@@ -147,6 +215,16 @@ export function useWebRTC() {
     };
 
     const leaveRoom = () => {
+        // Clean up socket listeners
+        if (socket) {
+            socket.off('user-connected');
+            socket.off('offer');
+            socket.off('answer');
+            socket.off('ice-candidate');
+            socket.off('chat-message');
+            socket.off('user-disconnected');
+        }
+
         if (peerConnectionRef.current) {
             peerConnectionRef.current.close();
             peerConnectionRef.current = null;
@@ -159,6 +237,7 @@ export function useWebRTC() {
         setIsConnected(false);
         setMessages([]);
         setIsScreenSharing(false);
+        iceCandidateQueueRef.current = [];
     };
 
     const toggleMic = () => {
