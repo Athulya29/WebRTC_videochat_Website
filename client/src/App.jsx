@@ -71,6 +71,9 @@ function App() {
   useEffect(() => {
     if (remoteVideoRef.current && remoteStream) {
       remoteVideoRef.current.srcObject = remoteStream;
+      console.log("Setting remote stream to video element:", remoteStream);
+      // Ensure playback starts
+      remoteVideoRef.current.play().catch(e => console.error("Error playing remote video:", e));
     }
   }, [remoteStream]);
 
@@ -198,13 +201,13 @@ function App() {
 
             {/* Remote Video */}
             <div className="video-wrapper">
-              {remoteStream ? (
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                />
-              ) : (
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                style={{ display: remoteStream ? 'block' : 'none', width: '100%', height: '100%', objectFit: 'cover' }}
+              />
+              {!remoteStream && (
                 <div className="waiting-msg">
                   <Users size={48} />
                   <p>Waiting for others to join...</p>

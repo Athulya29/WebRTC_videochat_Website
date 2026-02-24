@@ -34,6 +34,8 @@ io.on('connection', (socket) => {
     socket.on('offer', (offer, targetRoomId, userName) => {
         const roomInfo = socketRooms.get(socket.id);
         if (roomInfo) {
+            // Also store the latest name if it changed
+            if (userName) roomInfo.userName = userName;
             console.log(`Offer from ${userName || socket.id} in room ${roomInfo.roomId}`);
             socket.to(roomInfo.roomId).emit('offer', offer, socket.id, userName);
         }
@@ -42,6 +44,8 @@ io.on('connection', (socket) => {
     socket.on('answer', (answer, targetRoomId, userName) => {
         const roomInfo = socketRooms.get(socket.id);
         if (roomInfo) {
+            // Also store the latest name if it changed
+            if (userName) roomInfo.userName = userName;
             console.log(`Answer from ${userName || socket.id} in room ${roomInfo.roomId}`);
             socket.to(roomInfo.roomId).emit('answer', answer, socket.id, userName);
         }

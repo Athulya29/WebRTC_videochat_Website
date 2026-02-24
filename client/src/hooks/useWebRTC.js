@@ -152,10 +152,11 @@ export function useWebRTC() {
         const stream = await initializeMedia();
         const pc = createPeerConnection(socket, stream, roomId);
 
-        // Set up socket listeners BEFORE joining the room to avoid race conditions
         socket.on('user-connected', async (userId, remoteUserName) => {
             console.log('User connected:', userId, remoteUserName);
-            if (remoteUserName) setRemotePeerName(remoteUserName);
+            if (remoteUserName) {
+                setRemotePeerName(remoteUserName);
+            }
             // Create offer
             try {
                 const offer = await pc.createOffer();
@@ -168,8 +169,10 @@ export function useWebRTC() {
         });
 
         socket.on('offer', async (offer, fromId, remoteUserName) => {
-            console.log('Received offer', offer, 'from', remoteUserName);
-            if (remoteUserName) setRemotePeerName(remoteUserName);
+            console.log('Received offer', offer, 'from user:', remoteUserName);
+            if (remoteUserName) {
+                setRemotePeerName(remoteUserName);
+            }
             try {
                 await pc.setRemoteDescription(new RTCSessionDescription(offer));
                 // Flush any ICE candidates that arrived before remote description
@@ -184,8 +187,10 @@ export function useWebRTC() {
         });
 
         socket.on('answer', async (answer, fromId, remoteUserName) => {
-            console.log('Received answer', answer, 'from', remoteUserName);
-            if (remoteUserName) setRemotePeerName(remoteUserName);
+            console.log('Received answer', answer, 'from user:', remoteUserName);
+            if (remoteUserName) {
+                setRemotePeerName(remoteUserName);
+            }
             try {
                 if (!pc.currentRemoteDescription) {
                     await pc.setRemoteDescription(new RTCSessionDescription(answer));
