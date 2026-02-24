@@ -210,10 +210,10 @@ function App() {
               {!remoteStream && (
                 <div className="waiting-msg">
                   <Users size={48} />
-                  <p>Waiting for others to join...</p>
+                  <p>{remotePeerName ? `${remotePeerName} is connecting...` : 'Waiting for others to join...'}</p>
                 </div>
               )}
-              {remoteStream && (
+              {(remoteStream || remotePeerName) && (
                 <div className="video-label">
                   {remotePeerName || 'Partner'}
                   {remoteHandRaised && <Hand size={16} color="var(--primary)" style={{ marginLeft: '8px' }} />}
