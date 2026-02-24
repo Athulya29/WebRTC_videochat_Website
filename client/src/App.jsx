@@ -106,7 +106,7 @@ function App() {
           <div className="header-room">
             <div className="brand" style={{ marginBottom: 0 }}>
               <Video className="brand-icon" size={24} />
-              <h1 style={{ fontSize: '1.25rem' }}>NovaMeet</h1>
+              <h1 style={{ fontSize: '1.25rem' }}>Meetify</h1>
             </div>
 
             {userName && (
@@ -127,7 +127,7 @@ function App() {
                 {copied ? <Check size={16} color="var(--success)" /> : <Copy size={16} />}
               </button>
               <a
-                href={`https://wa.me/?text=${encodeURIComponent(`Join my NovaMeet video call!\nRoom ID: ${roomId}\nhttps://web-rtc-videochat-website.vercel.app/`)}`}
+                href={`https://wa.me/?text=${encodeURIComponent(`Join my Meetify video call!\nRoom ID: ${roomId}\nhttps://web-rtc-videochat-website.vercel.app/`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="btn-icon btn-whatsapp"
@@ -275,19 +275,28 @@ function App() {
       <div className="orb orb-2"></div>
       <div className="orb orb-3"></div>
 
+      {/* Animated particle dots */}
+      <div className="particles">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className={`particle particle-${i + 1}`}></div>
+        ))}
+      </div>
+
       <div className="brand">
-        <Video className="brand-icon" size={40} />
-        <h1>NovaMeet</h1>
+        <div className="brand-icon-ring">
+          <Video className="brand-icon" size={40} />
+        </div>
+        <h1>Meetify</h1>
       </div>
 
       <div className="glass-box home-card">
         <div className="home-header">
           <h2>Premium Video Calling</h2>
-          <p>Connect instantly with crystal clear quality.</p>
+          <p className="tagline">Connect instantly with crystal clear quality.</p>
           <div className="feature-badges">
-            <span className="badge"><Shield size={12} /> Secure</span>
-            <span className="badge"><Sparkles size={12} /> HD</span>
-            <span className="badge">Free</span>
+            <span className="badge badge-anim"><Shield size={12} /> Secure</span>
+            <span className="badge badge-anim"><Sparkles size={12} /> HD</span>
+            <span className="badge badge-anim">Free</span>
           </div>
         </div>
 
